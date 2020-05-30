@@ -170,7 +170,9 @@ function get_os_version() {
             fi
 
             # we provide binaries for RPI on Raspbian 9/10
-            if isPlatform "rpi" && compareVersions "$__os_debian_ver" gt 8 && compareVersions "$__os_debian_ver" lt 11; then
+            if isPlatform "rpi" && \
+               isPlatform "32bit" && \
+               compareVersions "$__os_debian_ver" gt 8 && compareVersions "$__os_debian_ver" lt 11; then
                # only set __has_binaries if not already set
                [[ -z "$__has_binaries" ]] && __has_binaries=1
             fi
@@ -406,8 +408,14 @@ function platform_rpi3() {
 }
 
 function platform_rpi4() {
-    __default_cpu_flags="-march=armv8-a+crc -mtune=cortex-a72 -mfpu=neon-fp-armv8 -mfloat-abi=hard"
-    __platform_flags+=(arm armv8 neon rpi gles gles3)
+    if isPlatform "32bit"; then
+        __default_cpu_flags="-march=armv8-a+crc -mtune=cortex-a72 -mfpu=neon-fp-armv8 -mfloat-abi=hard"
+        __platform_flags+=(arm armv8 neon)
+    else
+        __default_cpu_flags="-march=native"
+        __platform_flags+=(aarch64)
+    fi
+    __platform_flags+=(rpi gles gles3)
 }
 
 function platform_odroid-c1() {
