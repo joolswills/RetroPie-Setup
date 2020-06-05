@@ -39,7 +39,11 @@ function build_lr-flycast() {
     make clean
     if isPlatform "rpi"; then
         if isPlatform "rpi4"; then
-            params+=("platform=rpi4")
+            if isPlatform "aarch64"; then
+                params+=("ARCH=arm" "platform=rpi4_64")
+            else
+                params+=("platform=rpi4")
+            fi
         elif isPlatform "mesa"; then
             params+=("platform=rpi-mesa")
         else
