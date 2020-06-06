@@ -420,7 +420,7 @@ function platform_rpi4() {
         __platform_flags+=(arm armv8 neon)
     else
         __default_cpu_flags="-march=native"
-        __platform_flags+=(aarch64)
+        __platform_flags+=(aarch64 armv8)
     fi
     __platform_flags+=(rpi gles gles3)
 }
