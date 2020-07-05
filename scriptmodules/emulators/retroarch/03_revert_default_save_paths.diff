@@ -1,0 +1,33 @@
+From 7d6f3a4699d1db6703c54fc33dd93b87a3b3630a Mon Sep 17 00:00:00 2001
+From: Jools Wills <buzz@exotica.org.uk>
+Date: Wed, 22 Jul 2020 23:56:55 +0100
+Subject: [PATCH 2/2] Revert "(Linux) Set default saves/save states/system
+ paths"
+
+This reverts commit e44242db93fe7026e20cd26f98c99f17a58598bf.
+
+we currently rely on the old behaviour in RetroPie.
+---
+ frontend/drivers/platform_unix.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/frontend/drivers/platform_unix.c b/frontend/drivers/platform_unix.c
+index d48cc12fe3..f32c25c2bc 100644
+--- a/frontend/drivers/platform_unix.c
++++ b/frontend/drivers/platform_unix.c
+@@ -1907,12 +1907,6 @@ static void frontend_unix_get_env(int *argc,
+          "thumbnails", sizeof(g_defaults.dirs[DEFAULT_DIR_THUMBNAILS]));
+    fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_LOGS], base_path,
+          "logs", sizeof(g_defaults.dirs[DEFAULT_DIR_LOGS]));
+-   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SRAM], base_path,
+-         "saves", sizeof(g_defaults.dirs[DEFAULT_DIR_SRAM]));
+-   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SAVESTATE], base_path,
+-         "states", sizeof(g_defaults.dirs[DEFAULT_DIR_SAVESTATE]));
+-   fill_pathname_join(g_defaults.dirs[DEFAULT_DIR_SYSTEM], base_path,
+-         "system", sizeof(g_defaults.dirs[DEFAULT_DIR_SYSTEM]));
+ #endif
+ 
+ #ifndef IS_SALAMANDER
+-- 
+2.30.2
+

@@ -1,0 +1,26 @@
+From 48dfe42b6d7de00d442cd9abe75717a0baefe4ce Mon Sep 17 00:00:00 2001
+From: Jools Wills <buzz@exotica.org.uk>
+Date: Mon, 23 Mar 2020 03:22:20 +0000
+Subject: [PATCH 1/2] disable search menu / action
+
+---
+ retroarch.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/retroarch.c b/retroarch.c
+index 77fa18a993..e9cc258b49 100644
+--- a/retroarch.c
++++ b/retroarch.c
+@@ -2552,7 +2552,8 @@ int generic_menu_entry_action(
+                   entry->label, entry->type, i, entry->entry_idx);
+          break;
+       case MENU_ACTION_SEARCH:
+-         menu_input_dialog_start_search();
++         // disable search action
++         // menu_input_dialog_start_search();
+          break;
+       case MENU_ACTION_SCAN:
+          if (cbs && cbs->action_scan)
+-- 
+2.30.2
+

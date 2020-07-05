@@ -12,7 +12,7 @@
 rp_module_id="retroarch"
 rp_module_desc="RetroArch - frontend to the libretro emulator cores - required by all lr-* emulators"
 rp_module_licence="GPL3 https://raw.githubusercontent.com/libretro/RetroArch/master/COPYING"
-rp_module_repo="git https://github.com/libretro/RetroArch.git v1.8.8"
+rp_module_repo="git https://github.com/libretro/RetroArch.git v1.9.1"
 rp_module_section="core"
 
 function depends_retroarch() {
@@ -41,12 +41,8 @@ function depends_retroarch() {
 
 function sources_retroarch() {
     gitPullOrClone
-    applyPatch "$md_data/01_hotkey_hack.diff"
-    applyPatch "$md_data/02_disable_search.diff"
-    applyPatch "$md_data/03_shader_path_config_enable.diff"
-    # revert of https://github.com/libretro/RetroArch/pull/10524/commits/9eb84728
-    # see https://github.com/RetroPie/RetroPie-Setup/issues/3249
-    applyPatch "$md_data/04_config_save_fix.diff"
+    applyPatch "$md_data/01_disable_search.diff"
+    applyPatch "$md_data/03_revert_default_save_paths.diff"
 }
 
 function build_retroarch() {
@@ -163,6 +159,7 @@ function configure_retroarch() {
     iniSet "video_aspect_ratio_auto" "true"
     iniSet "rgui_show_start_screen" "false"
     iniSet "rgui_browser_directory" "$romdir"
+    iniSet "rgui_switch_icons" "false"
 
     if ! isPlatform "x86"; then
         iniSet "video_threaded" "true"
