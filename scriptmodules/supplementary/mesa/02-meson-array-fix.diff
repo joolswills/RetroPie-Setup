@@ -1,8 +1,8 @@
 diff --git a/debian/rules b/debian/rules
-index 8dc1a2dc331..c24f8ca7ff8 100755
+index 8dc1a2dc331..78fff0d5dc6 100755
 --- a/debian/rules
 +++ b/debian/rules
-@@ -40,28 +40,28 @@ ifeq ($(DEB_HOST_ARCH_OS), hurd)
+@@ -40,28 +40,25 @@ ifeq ($(DEB_HOST_ARCH_OS), hurd)
  	confflags_DIRECT_RENDERING = -Dglx-direct=false
  	confflags_GBM = -Dgbm=false
  	confflags_OSMESA = -Dosmesa=classic
@@ -14,21 +14,19 @@ index 8dc1a2dc331..c24f8ca7ff8 100755
    ifeq ($(DEB_HOST_ARCH_OS), linux)
  	confflags_DRI3 = -Ddri3=true
 -	DRI_DRIVERS += nouveau,
-+	DRI_DRIVERS += nouveau
- 	# Gallium drivers which require kernel support, not yet ported to non-Linux
+-	# Gallium drivers which require kernel support, not yet ported to non-Linux
 -	GALLIUM_DRIVERS += nouveau, virgl,
-+	GALLIUM_DRIVERS += nouveau, virgl
  
  	# Freedreno requires arm in addition
  	ifneq (,$(filter arm arm64,$(DEB_HOST_ARCH_CPU)))
 -		GALLIUM_DRIVERS += freedreno,
-+		GALLIUM_DRIVERS += , freedreno
++		GALLIUM_DRIVERS += freedreno
  	endif
  
  	# etnaviv, kmsro, tegra, vc4 and v3d kernel support are only available on armhf and arm64
  	ifneq (,$(filter $(DEB_HOST_ARCH), armhf arm64))
 -		GALLIUM_DRIVERS += etnaviv, kmsro, lima, panfrost, tegra, vc4, v3d,
-+		GALLIUM_DRIVERS += , etnaviv, kmsro, lima, panfrost, tegra, vc4, v3d
++		GALLIUM_DRIVERS += , etnaviv, kmsro, lima, panfrost, vc4, v3d
  	endif
  
  	ifneq (,$(filter $(DEB_HOST_ARCH), amd64 i386 x32))
@@ -37,19 +35,19 @@ index 8dc1a2dc331..c24f8ca7ff8 100755
  		# svga needs xa state tracker
  		confflags_GALLIUM += -Dgallium-xa=true
  		VULKAN_DRIVERS += intel,
-@@ -76,17 +76,17 @@ else
+@@ -76,17 +73,17 @@ else
  
    # Build intel drivers on archs where libdrm-intel is installed
    ifneq (,$(filter $(DEB_HOST_ARCH),amd64 i386 kfreebsd-amd64 kfreebsd-i386 x32))
 -	DRI_DRIVERS += i915, i965,
 -	GALLIUM_DRIVERS += iris,
-+	DRI_DRIVERS += , i915, i965
++	DRI_DRIVERS += i915, i965
 +	GALLIUM_DRIVERS += , iris
    endif
  
 -	DRI_DRIVERS += r200, r100,
 -	GALLIUM_DRIVERS += r600, r300,
-+	DRI_DRIVERS += , r200, r100
++	DRI_DRIVERS += r200, r100
 +	GALLIUM_DRIVERS += , r600, r300
  
    # LLVM is required for building r300g, radeonsi and llvmpipe drivers.
@@ -60,7 +58,7 @@ index 8dc1a2dc331..c24f8ca7ff8 100755
  	confflags_GALLIUM += -Dllvm=true
  	confflags_GALLIUM += -Dgallium-opencl=icd
  	confflags_OSMESA = -Dosmesa=gallium
-@@ -96,7 +96,7 @@ else
+@@ -96,7 +93,7 @@ else
  		confflags_GALLIUM += -Dgallium-nine=true
  	endif
    else
@@ -69,7 +67,7 @@ index 8dc1a2dc331..c24f8ca7ff8 100755
  	confflags_GALLIUM += -Dllvm=false
  	confflags_OSMESA = -Dosmesa=classic
    endif
-@@ -104,7 +104,7 @@ else
+@@ -104,7 +101,7 @@ else
    # radv needs LLVM and the Vulkan loader, so only build on the subset of
    # arches where we have LLVM enabled and where the Vulkan loader is built.
    ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64))
