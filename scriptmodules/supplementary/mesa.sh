@@ -16,8 +16,10 @@ rp_module_section="exp"
 rp_module_flags="!all rpi"
 
 function _get_rasp_ver_mesa() {
+    local pkg="$1"
+    [[ -z "$pkg" ]] && pkg="libgl1-mesa-dri"
     # quick hack to get version of raspbian version (xargs used as a shortcut to trim whitespace)
-    apt-cache madison libgl1-mesa-dri | grep -m1 raspberrypi.org | cut -d\| -f2 | xargs
+    apt-cache madison "$pkg" | grep -m1 raspberrypi.org | cut -d\| -f2 | xargs
 }
 
 function add_repo_mesa() {
@@ -38,9 +40,9 @@ function depends_mesa() {
     mkdir -p "$__tmpdir"
     local meson_pkg="$__tmpdir/$meson_ver"
     # get dependencies from system mesa
-    apt-get -y build-dep mesa
+    apt-get -y build-dep mesa libdrm
     # additional dependencies
-    getDepends libzstd-dev rsync llvm-9-dev libclang-9-dev
+    getDepends libzstd-dev rsync llvm-9-dev libclang-9-dev valgrind
     if hasPackage meson 0.54 lt; then
         # latest mesa requires newer meson than is available in buster
         wget -O"$meson_pkg" "http://http.us.debian.org/debian/pool/main/m/meson/$meson_ver"
@@ -50,16 +52,20 @@ function depends_mesa() {
 }
 
 function sources_mesa() {
+    local xorg_team_git="https://salsa.debian.org/xorg-team/"
+
     __persistent_repos=1
+
+    # mesa 20.x requires newer libdrm
+    gitPullOrClone "$md_build/libdrm" "$xorg_team_git/lib/libdrm.git" "debian-unstable"
+
+    # get latest mesa sources
     gitPullOrClone "$md_build/mesa" https://gitlab.freedesktop.org/mesa/mesa.git
 
     cd "$md_build/mesa"
 
-    # revert HMM changes which require a newer libdrm
-    git revert --no-edit 08ceba94
-
     # add debian mesa repository and fetch commits
-    git remote add debian https://salsa.debian.org/xorg-team/lib/mesa.git
+    git remote add debian "$xorg_team_git/lib/mesa.git"
     git fetch debian debian-experimental
 
     # checkout debian folder from debian-experimental - ideally we would use debian-experimental as a base
@@ -79,7 +85,12 @@ function sources_mesa() {
 }
 
 function build_mesa() {
-    cd mesa
+    # force building/installing of libdrm first
+    cd "$md_build/libdrm"
+    (unset CFLAGS; dpkg-buildpackage -b -us -uc)
+    install_mesa
+
+    cd "$md_build/mesa"
     DEB_CFLAGS_PREPEND="$CFLAGS" DEB_CXXFLAGS_PREPEND="$CXXFLAGS" dpkg-buildpackage -us -uc -j$(nproc)
 }
 
@@ -95,10 +106,18 @@ function install_mesa() {
 function downgrade_mesa() {
     local rasp_ver="$(_get_rasp_ver_mesa)"
     local pkg
+
     while read pkg; do
         hasPackage "$pkg" && pkgs+=("$pkg=$rasp_ver")
-    done < <(_get_packages_mesa)
+    done < <(_get_mesa_packages_mesa)
     aptInstall --allow-downgrades "${pkgs[@]}"
+
+    rasp_ver="$(_get_rasp_ver_mesa libdrm-dev)"
+    while read pkg; do
+        hasPackage "$pkg" && pkgs+=("$pkg=$rasp_ver")
+    done < <(_get_libdrm_packages_mesa)
+    aptInstall --allow-downgrades "${pkgs[@]}"
+
     # downgrade meson
     meson_ver=$(apt-cache madison meson | grep -m1 raspberrypi.org | cut -d\| -f2 | xargs)
     aptInstall --allow-downgrades "meson=$meson_ver"
@@ -121,10 +140,10 @@ function list_packages_mesa() {
         if hasPackage "$pkg"; then
             dpkg-query -W --showformat='Package: ${Package} - ${Version}\n' "$pkg"
         fi
-    done < <(_get_packages_mesa)
+    done < <(_get_mesa_packages_mesa)
 }
 
-function _get_packages_mesa() {
+function _get_mesa_packages_mesa() {
     local pkgs=(
         libd3dadapter9-mesa
         libd3dadapter9-mesa-dbgsym
@@ -159,6 +178,34 @@ function _get_packages_mesa() {
         mesa-vdpau-drivers-dbgsym
         mesa-vulkan-drivers
         mesa-vulkan-drivers-dbgsym
+    )
+    printf "%s\n" "${pkgs[@]}"
+}
+
+function _get_libdrm_packages_mesa() {
+    local pkgs=(
+        libdrm2
+        libdrm2-dbgsym
+        libdrm-amdgpu1
+        libdrm-amdgpu1
+        libdrm-common
+        libdrm-dev
+        libdrm-etnaviv1
+        libdrm-etnaviv1-dbgsym
+        libdrm-exynos1
+        libdrm-exynos1-dbgsym
+        libdrm-freedreno1
+        libdrm-freedreno1-dbgsym
+        libdrm-nouveau2
+        libdrm-nouveau2-dbgsym
+        libdrm-omap1
+        libdrm-omap1-dbgsym
+        libdrm-radeon1
+        libdrm-radeon1-dbgsym
+        libdrm-tegra0
+        libdrm-tegra0-dbgsym
+        libdrm-tests
+        libdrm-tests-dbgsym
     )
     printf "%s\n" "${pkgs[@]}"
 }
