@@ -90,6 +90,10 @@ function build_mesa() {
     (unset CFLAGS; dpkg-buildpackage -b -us -uc)
     install_mesa
 
+    # hack - remove valgrind, due to mesa build issues when the buster version is installed
+    # haven't had a chance to look at it to resolve in a better way
+    aptRemove valgrind
+
     cd "$md_build/mesa"
     DEB_CFLAGS_PREPEND="$CFLAGS" DEB_CXXFLAGS_PREPEND="$CXXFLAGS" dpkg-buildpackage -us -uc -j$(nproc)
 }
