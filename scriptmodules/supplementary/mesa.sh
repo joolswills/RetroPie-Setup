@@ -17,7 +17,6 @@ rp_module_flags="!all rpi"
 
 function _get_rasp_ver_mesa() {
     local pkg="$1"
-    [[ -z "$pkg" ]] && pkg="libgl1-mesa-dri"
     # quick hack to get version of raspbian version (xargs used as a shortcut to trim whitespace)
     apt-cache madison "$pkg" | grep -m1 raspberrypi.org | cut -d\| -f2 | xargs
 }
@@ -40,9 +39,9 @@ function depends_mesa() {
     mkdir -p "$__tmpdir"
     local meson_pkg="$__tmpdir/$meson_ver"
     # get dependencies from system mesa
-    apt-get -y build-dep mesa libdrm
+    apt-get -y build-dep mesa libdrm libglvnd
     # additional dependencies
-    getDepends libzstd-dev rsync llvm-9-dev libclang-9-dev valgrind
+    getDepends libzstd-dev rsync llvm-9-dev libclang-9-dev valgrind libxcb-shm0-dev
     if hasPackage meson 0.54 lt; then
         # latest mesa requires newer meson than is available in buster
         wget -O"$meson_pkg" "http://http.us.debian.org/debian/pool/main/m/meson/$meson_ver"
@@ -58,6 +57,9 @@ function sources_mesa() {
 
     # mesa 20.x requires newer libdrm
     gitPullOrClone "$md_build/libdrm" "$xorg_team_git/lib/libdrm.git" "debian-unstable"
+
+    # and libglvnd
+    gitPullOrClone "$md_build/libglvnd" "$xorg_team_git/lib/libglvnd.git" "debian-unstable"
 
     # get latest mesa sources
     gitPullOrClone "$md_build/mesa" https://gitlab.freedesktop.org/mesa/mesa.git
@@ -75,10 +77,9 @@ function sources_mesa() {
     git checkout debian/debian-experimental -- debian
 
     # lower dependencies from debian-experimental packaging
+    cd debian
     applyPatch "$md_data/01-lower-dependencies.diff"
-
-    # fix DRI_DRIVERS parameters to avoid a trailing empty , parameter which fails with recent meson.build
-    applyPatch "$md_data/02-meson-array-fix.diff"
+    cd ..
 
     # create a new entry in debian/changelog
     DEBEMAIL="Jools Wills <buzz@exotica.org.uk>" dch -v $(<VERSION) "Latest Mesa Developent code"
@@ -88,39 +89,40 @@ function build_mesa() {
     # force building/installing of libdrm first
     cd "$md_build/libdrm"
     (unset CFLAGS; dpkg-buildpackage -b -us -uc)
-    install_mesa
+    cd "$md_build/libglvnd"
+    (unset CFLAGS; dpkg-buildpackage -b -us -uc)
 
-    # hack - remove valgrind, due to mesa build issues when the buster version is installed
-    # haven't had a chance to look at it to resolve in a better way
-    aptRemove valgrind
+    install_mesa
 
     cd "$md_build/mesa"
     DEB_CFLAGS_PREPEND="$CFLAGS" DEB_CXXFLAGS_PREPEND="$CXXFLAGS" dpkg-buildpackage -us -uc -j$(nproc)
 }
 
 function install_mesa() {
-    rsync -av --delete *.deb "$md_inst/"
+    rsync -av --delete "$md_build"/*.deb "$md_inst/"
     cd "$md_inst"
     dpkg-scanpackages -m . | gzip >"$md_inst/Packages.gz"
     add_repo_mesa
     apt-get update
-    apt-get -y upgrade
+    apt-get -y dist-upgrade
 }
 
 function downgrade_mesa() {
-    local rasp_ver="$(_get_rasp_ver_mesa)"
+    declare -A name_pkg=(
+        ["mesa"]="libgl1-mesa-dev"
+        ["libdrm"]="libdrm-dev"
+        ["libglvnd"]="libglvnd-dev"
+    )
+
+    local name
     local pkg
-
-    while read pkg; do
-        hasPackage "$pkg" && pkgs+=("$pkg=$rasp_ver")
-    done < <(_get_mesa_packages_mesa)
-    aptInstall --allow-downgrades "${pkgs[@]}"
-
-    rasp_ver="$(_get_rasp_ver_mesa libdrm-dev)"
-    while read pkg; do
-        hasPackage "$pkg" && pkgs+=("$pkg=$rasp_ver")
-    done < <(_get_libdrm_packages_mesa)
-    aptInstall --allow-downgrades "${pkgs[@]}"
+    for name in "${!name_pkg[@]}"; do
+        local rasp_ver="$(_get_rasp_ver_mesa "${name_pkg[$name]}")"
+        while read pkg; do
+            hasPackage "$pkg" && pkgs+=("$pkg=$rasp_ver")
+        done < <(_get_${name}_packages_mesa)
+        aptInstall --allow-downgrades "${pkgs[@]}"
+    done
 
     # downgrade meson
     meson_ver=$(apt-cache madison meson | grep -m1 raspberrypi.org | cut -d\| -f2 | xargs)
@@ -210,6 +212,33 @@ function _get_libdrm_packages_mesa() {
         libdrm-tegra0-dbgsym
         libdrm-tests
         libdrm-tests-dbgsym
+    )
+    printf "%s\n" "${pkgs[@]}"
+}
+
+function _get_libglvnd_packages_mesa() {
+    local pkgs=(
+        libegl1
+        libegl1-dbgsym
+        libegl-dev
+        libgl1
+        libgl1-dbgsym
+        libgl-dev
+        libgles1
+        libgles1-dbgsym
+        libgles2
+        libgles2-dbgsym
+        libgles-dev
+        libglvnd0
+        libglvnd0-dbgsym
+        libglvnd-core-dev
+        libglvnd-dev
+        libglx0
+        libglx0-dbgsym
+        libglx-dev
+        libopengl0
+        libopengl0-dbgsym
+        libopengl-dev
     )
     printf "%s\n" "${pkgs[@]}"
 }
