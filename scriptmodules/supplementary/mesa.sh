@@ -99,7 +99,7 @@ function build_mesa() {
 }
 
 function install_mesa() {
-    rsync -av --delete "$md_build"/*.deb "$md_inst/"
+    rsync -av "$md_build"/*.deb "$md_inst/"
     cd "$md_inst"
     dpkg-scanpackages -m . | gzip >"$md_inst/Packages.gz"
     add_repo_mesa
