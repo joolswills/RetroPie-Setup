@@ -20,10 +20,10 @@ index 0a6bfc0a545..94ae4a5585f 100644
  Vcs-Browser: https://salsa.debian.org/xorg-team/lib/mesa
  Homepage: https://mesa3d.org/
 diff --git a/debian/rules b/debian/rules
-index d46478b61d3..0ffd82caca9 100755
+index 9fc57713b17..3e4ca119405 100755
 --- a/rules
 +++ b/rules
-@@ -73,7 +73,7 @@ else
+@@ -79,7 +79,7 @@ else
  	EGL_PLATFORMS += ,wayland
  
  	ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x))
@@ -32,12 +32,3 @@ index d46478b61d3..0ffd82caca9 100755
  	endif
    endif
  
-@@ -104,7 +104,7 @@ else
-   # radv needs LLVM and the Vulkan loader, so only build on the subset of
-   # arches where we have LLVM enabled and where the Vulkan loader is built.
-   ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64))
--	VULKAN_DRIVERS += ,amd
-+	VULKAN_DRIVERS += amd
-   endif
- 
-   # build vulkan layers where Vulkan loader is available
