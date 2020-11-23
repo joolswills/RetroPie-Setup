@@ -1,6 +1,8 @@
+diff --git a/debian/control b/debian/control
+index c6229a0bc17..765cd9d1d2e 100644
 --- a/control
 +++ b/control
-@@ -42,14 +42,12 @@ Build-Depends:
+@@ -43,14 +43,12 @@ Build-Depends:
   libelf-dev [amd64 arm64 armel armhf i386 kfreebsd-amd64 kfreebsd-i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
   libwayland-dev (>= 1.15.0) [linux-any],
   libwayland-egl-backend-dev (>= 1.15.0) [linux-any],
@@ -18,22 +20,24 @@
  Vcs-Git: https://salsa.debian.org/xorg-team/lib/mesa.git
  Vcs-Browser: https://salsa.debian.org/xorg-team/lib/mesa
  Homepage: https://mesa3d.org/
+diff --git a/debian/rules b/debian/rules
+index 1e575cf7380..ccdbc35a5c1 100755
 --- a/rules
 +++ b/rules
-@@ -76,13 +76,15 @@ else
- 		# svga needs xa state tracker
- 		confflags_GALLIUM += -Dgallium-xa=true
- 		VULKAN_DRIVERS += ,intel
-+	else
+@@ -68,6 +68,7 @@ else
+ 	# etnaviv, kmsro, tegra, vc4 and v3d kernel support are only available on armhf and arm64
+ 	ifneq (,$(filter $(DEB_HOST_ARCH), armhf arm64))
+ 		GALLIUM_DRIVERS += ,etnaviv,kmsro,lima,panfrost,tegra,vc4,v3d
 +		VULKAN_DRIVERS += ,broadcom
  	endif
  
- 	# Non-Linux ports also lack *_CLOEXEC and epoll, so wayland isn't ready yet:
+ 	ifneq (,$(filter $(DEB_HOST_ARCH), amd64 i386 x32))
+@@ -81,7 +82,7 @@ else
  	EGL_PLATFORMS += ,wayland
  
  	ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x))
--		confflags_VALGRIND += -Dvalgrind=true
-+		confflags_VALGRIND += -Dvalgrind=false
+-		confflags_VALGRIND += -Dvalgrind=enabled
++		confflags_VALGRIND += -Dvalgrind=disabled
  	endif
    endif
  
