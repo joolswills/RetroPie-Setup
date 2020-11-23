@@ -38,6 +38,9 @@ function depends_mesa() {
     local meson_ver="meson_0.55.3-1_all.deb"
     mkdir -p "$__tmpdir"
     local meson_pkg="$__tmpdir/$meson_ver"
+    # make sure raspberrypi deb-src repo is enabled
+    sed -i "s/#.*deb-src/deb-src/" /etc/apt/sources.list.d/raspi.list
+    aptUpdate
     # get dependencies from system mesa
     apt-get -y build-dep mesa libdrm libglvnd
     # additional dependencies
