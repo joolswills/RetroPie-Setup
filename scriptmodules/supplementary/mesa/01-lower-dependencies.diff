@@ -21,9 +21,18 @@ index 9391121a607..48e9cde816d 100644
  Vcs-Browser: https://salsa.debian.org/xorg-team/lib/mesa
  Homepage: https://mesa3d.org/
 diff --git a/debian/rules b/debian/rules
-index 9ea9c02edcf..1d010e37d82 100755
+index 9ea9c02edcf..d3b7719d352 100755
 --- a/rules
 +++ b/rules
+@@ -36,7 +36,7 @@ GALLIUM_DRIVERS = swrast
+ VULKAN_DRIVERS =
+ 
+ confflags_DRI3 = -Ddri3=disabled
+-confflags_OSMESA =  -Dosmesa=gallium
++confflags_OSMESA =  -Dosmesa=true
+ 
+ # hurd doesn't do direct rendering
+ ifeq ($(DEB_HOST_ARCH_OS), hurd)
 @@ -88,7 +88,7 @@ else
  	EGL_PLATFORMS += ,wayland
  
