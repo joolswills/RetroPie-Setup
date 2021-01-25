@@ -23,18 +23,9 @@ index 9391121a607..65e01f9e786 100644
  Vcs-Browser: https://salsa.debian.org/xorg-team/lib/mesa
  Homepage: https://mesa3d.org/
 diff --git a/debian/rules b/debian/rules
-index 9ea9c02edcf..4baf24532d9 100755
+index a6db68f4bec..ec9be49cfa5 100755
 --- a/rules
 +++ b/rules
-@@ -36,7 +36,7 @@ GALLIUM_DRIVERS = swrast
- VULKAN_DRIVERS =
- 
- confflags_DRI3 = -Ddri3=disabled
--confflags_OSMESA =  -Dosmesa=gallium
-+confflags_OSMESA =  -Dosmesa=true
- 
- # hurd doesn't do direct rendering
- ifeq ($(DEB_HOST_ARCH_OS), hurd)
 @@ -85,10 +85,10 @@ else
  	# Non-Linux ports lack epoll, so wayland isn't ready yet:
  	# https://gitlab.freedesktop.org/wayland/wayland/-/issues/72
