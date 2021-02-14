@@ -35,7 +35,7 @@ function remove_mesa() {
 }
 
 function depends_mesa() {
-    local meson_ver="meson_0.56.0-1.1_all.deb"
+    local meson_ver="meson_0.56.2-1_all.deb"
     mkdir -p "$__tmpdir"
     local meson_pkg="$__tmpdir/$meson_ver"
     # make sure raspberrypi deb-src repo is enabled
