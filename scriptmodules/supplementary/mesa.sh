@@ -64,6 +64,12 @@ function sources_mesa() {
     # and libglvnd
     gitPullOrClone "$md_build/libglvnd" "$xorg_team_git/lib/libglvnd.git" "debian-unstable"
 
+    # reset / clean any existing source folder
+    if [[ -d "$md_build/mesa/.git" ]]; then
+        git -C "$md_build/mesa" reset --hard
+        git -C "$md_build/mesa" clean -f -d
+    fi
+
     # get latest mesa sources
     gitPullOrClone "$md_build/mesa" https://gitlab.freedesktop.org/mesa/mesa.git
 
