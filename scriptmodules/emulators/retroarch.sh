@@ -42,6 +42,7 @@ function depends_retroarch() {
 function sources_retroarch() {
     gitPullOrClone
     applyPatch "$md_data/01_disable_search.diff"
+    applyPatch "$md_data/02_shader_path_config_enable.diff"
     applyPatch "$md_data/03_revert_default_save_paths.diff"
 }
 
