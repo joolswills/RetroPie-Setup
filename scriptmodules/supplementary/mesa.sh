@@ -88,7 +88,6 @@ function sources_mesa() {
     # lower dependencies from debian-experimental packaging
     cd debian
     applyPatch "$md_data/01-lower-dependencies.diff"
-    applyPatch "$md_data/02-misc.diff"
     cd ..
 
     # create a new entry in debian/changelog
