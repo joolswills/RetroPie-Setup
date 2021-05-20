@@ -71,7 +71,7 @@ function sources_mesa() {
     fi
 
     # get latest mesa sources
-    gitPullOrClone "$md_build/mesa" https://gitlab.freedesktop.org/mesa/mesa.git
+    gitPullOrClone "$md_build/mesa" https://gitlab.freedesktop.org/mesa/mesa.git main
 
     cd "$md_build/mesa"
 
