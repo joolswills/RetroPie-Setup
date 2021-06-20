@@ -1,8 +1,14 @@
-diff --git a/debian/control b/debian/control
-index 08553de4234..33a1b3e65e6 100644
 --- a/control
 +++ b/control
-@@ -44,14 +44,12 @@ Build-Depends:
+@@ -6,7 +6,6 @@ Uploaders: Andreas Boll <aboll@debian.org>
+ Standards-Version: 4.1.4
+ Build-Depends:
+  debhelper-compat (= 12),
+- directx-headers-dev [linux-amd64 linux-arm64],
+  glslang-tools [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64 x32],
+  meson (>= 0.45),
+  quilt (>= 0.63-8.2~),
+@@ -44,14 +43,12 @@ Build-Depends:
   libelf-dev [amd64 arm64 armel armhf i386 kfreebsd-amd64 kfreebsd-i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
   libwayland-dev (>= 1.15.0) [linux-any],
   libwayland-egl-backend-dev (>= 1.15.0) [linux-any],
@@ -31,7 +37,19 @@ index 08553de4234..33a1b3e65e6 100644
    endif
  
    ifeq ($(DEB_HOST_ARCH_OS), linux)
-@@ -85,10 +85,10 @@ else
+@@ -64,11 +64,6 @@ else
+ 	# Gallium drivers which require kernel support, not yet ported to non-Linux
+ 	GALLIUM_DRIVERS += nouveau virgl
+ 
+-	# Freedreno requires arm in addition
+-	ifneq (,$(filter arm arm64,$(DEB_HOST_ARCH_CPU)))
+-		GALLIUM_DRIVERS += freedreno
+-	endif
+-
+ 	# etnaviv, kmsro, tegra, vc4 and v3d kernel support are only available on armhf and arm64
+ 	ifneq (,$(filter $(DEB_HOST_ARCH), armhf arm64))
+ 		GALLIUM_DRIVERS += etnaviv kmsro lima panfrost tegra vc4 v3d
+@@ -85,10 +80,10 @@ else
  	# Non-Linux ports lack epoll, so wayland isn't ready yet:
  	# https://gitlab.freedesktop.org/wayland/wayland/-/issues/72
  	# hurd also lacks *_CLOEXEC
@@ -44,7 +62,7 @@ index 08553de4234..33a1b3e65e6 100644
  	endif
  
  	# WSL supports only amd64 and arm64
-@@ -106,7 +106,7 @@ else
+@@ -106,7 +101,7 @@ else
    # LLVM is required for building r300g, radeonsi and llvmpipe drivers.
    # It's also required for building OpenCL support.
    ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64))
@@ -53,3 +71,10 @@ index 08553de4234..33a1b3e65e6 100644
  	confflags_GALLIUM += -Dllvm=enabled
  	confflags_GALLIUM += -Dgallium-opencl=icd
  
+--- a/patches/series
++++ b/patches/series
+@@ -3,4 +3,3 @@ fix-python-shebang.diff
+ path_max.diff
+ src_glx_dri_common.h.diff
+ fix-ftbfs.diff
+-iris-avoid-abort-if-enomem.diff
