@@ -49,7 +49,7 @@
  	# etnaviv, kmsro, tegra, vc4 and v3d kernel support are only available on armhf and arm64
  	ifneq (,$(filter $(DEB_HOST_ARCH), armhf arm64))
  		GALLIUM_DRIVERS += etnaviv kmsro lima panfrost tegra vc4 v3d
-@@ -85,10 +80,10 @@ else
+@@ -85,16 +80,12 @@ else
  	# Non-Linux ports lack epoll, so wayland isn't ready yet:
  	# https://gitlab.freedesktop.org/wayland/wayland/-/issues/72
  	# hurd also lacks *_CLOEXEC
@@ -61,8 +61,14 @@
 +		confflags_VALGRIND += -Dvalgrind=disabled
  	endif
  
- 	# WSL supports only amd64 and arm64
-@@ -106,7 +101,7 @@ else
+-	# WSL supports only amd64 and arm64
+-	ifneq (,$(filter amd64 arm64,$(DEB_HOST_ARCH)))
+-		GALLIUM_DRIVERS += d3d12
+-	endif
+   endif
+ 
+   # Build intel drivers on archs where libdrm-intel is installed
+@@ -106,7 +97,7 @@ else
    # LLVM is required for building r300g, radeonsi and llvmpipe drivers.
    # It's also required for building OpenCL support.
    ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64))
