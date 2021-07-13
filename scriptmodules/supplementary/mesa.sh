@@ -44,7 +44,7 @@ function depends_mesa() {
     # get dependencies from system mesa
     apt-get -y build-dep mesa libdrm libglvnd
     # additional dependencies
-    getDepends libzstd-dev rsync llvm-9-dev libclang-9-dev valgrind libxcb-shm0-dev python3-docutils
+    getDepends devscripts libzstd-dev rsync llvm-9-dev libclang-9-dev valgrind libxcb-shm0-dev python3-docutils ninja-build
     if hasPackage meson 0.54 lt; then
         # latest mesa requires newer meson than is available in buster
         wget -O"$meson_pkg" "http://http.us.debian.org/debian/pool/main/m/meson/$meson_ver"
