@@ -108,6 +108,7 @@ function build_mesa() {
 }
 
 function install_mesa() {
+    mkdir -p "$md_inst"
     rsync -av "$md_build"/*.deb "$md_inst/"
     cd "$md_inst"
     dpkg-scanpackages -m . | gzip >"$md_inst/Packages.gz"
