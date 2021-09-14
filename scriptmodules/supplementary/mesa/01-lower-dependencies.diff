@@ -77,3 +77,10 @@
  	confflags_GALLIUM += -Dllvm=enabled
  	confflags_GALLIUM += -Dgallium-opencl=icd
  
+--- a/patches/series
++++ b/patches/series
+@@ -1,4 +1,3 @@
+ 07_gallium-fix-build-failure-on-powerpcspe.diff
+-fix-python-shebang.diff
+ path_max.diff
+ src_glx_dri_common.h.diff
