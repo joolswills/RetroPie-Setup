@@ -104,7 +104,7 @@ function build_mesa() {
     install_mesa
 
     cd "$md_build/mesa"
-    DEB_CFLAGS_PREPEND="$CFLAGS" DEB_CXXFLAGS_PREPEND="$CXXFLAGS" dpkg-buildpackage -us -uc -j$(nproc)
+    DEB_BUILD_PROFILES="pkg.mesa.nolibva" DEB_CFLAGS_PREPEND="$CFLAGS" DEB_CXXFLAGS_PREPEND="$CXXFLAGS" dpkg-buildpackage -us -uc -j$(nproc)
 }
 
 function install_mesa() {
