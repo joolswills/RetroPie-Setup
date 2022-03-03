@@ -54,7 +54,7 @@ function depends_mesa() {
 }
 
 function sources_mesa() {
-    local xorg_team_git="https://salsa.debian.org/xorg-team/"
+    local xorg_team_git="https://salsa.debian.org/xorg-team"
 
     __persistent_repos=1
 
