@@ -8,36 +8,36 @@
   glslang-tools [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64 x32],
   meson (>= 0.45),
   quilt (>= 0.63-8.2~),
-@@ -44,14 +43,12 @@ Build-Depends:
+@@ -43,14 +42,12 @@ Build-Depends:
   libelf-dev [amd64 arm64 armel armhf i386 kfreebsd-amd64 kfreebsd-i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
   libwayland-dev (>= 1.15.0) [linux-any],
   libwayland-egl-backend-dev (>= 1.15.0) [linux-any],
-- llvm-12-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
-- libclang-12-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
-- libclang-cpp12-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
-- libclc-12-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
-+ llvm-9-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
-+ libclang-9-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
-+ libclc-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
+- llvm-13-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
+- libclang-13-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
+- libclang-cpp13-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
+- libclc-13-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
++ llvm-9-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
++ libclang-9-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
++ libclc-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
   wayland-protocols (>= 1.9),
   zlib1g-dev,
-  libglvnd-dev (>= 1.3.2),
+  libglvnd-core-dev (>= 1.3.2),
 - valgrind [amd64 arm64 armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x],
  Vcs-Git: https://salsa.debian.org/xorg-team/lib/mesa.git
  Vcs-Browser: https://salsa.debian.org/xorg-team/lib/mesa
  Homepage: https://mesa3d.org/
 --- a/rules
 +++ b/rules
-@@ -55,7 +55,7 @@ else
+@@ -59,7 +59,7 @@ else
    # radv/lavapipe needs LLVM and the Vulkan loader, so only build on the subset of
    # arches where we have LLVM enabled and where the Vulkan loader is built.
-   ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64))
+   ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64))
 -	VULKAN_DRIVERS += amd swrast
 +	VULKAN_DRIVERS += swrast
    endif
  
    ifeq ($(DEB_HOST_ARCH_OS), linux)
-@@ -64,11 +64,6 @@ else
+@@ -67,11 +67,6 @@ else
  	# Gallium drivers which require kernel support, not yet ported to non-Linux
  	GALLIUM_DRIVERS += nouveau virgl
  
@@ -49,7 +49,7 @@
  	# etnaviv, kmsro, tegra, vc4 and v3d kernel support are only available on armhf and arm64
  	ifneq (,$(filter $(DEB_HOST_ARCH), armhf arm64))
  		GALLIUM_DRIVERS += etnaviv kmsro lima panfrost tegra vc4 v3d
-@@ -85,16 +80,12 @@ else
+@@ -88,16 +83,12 @@ else
  	# Non-Linux ports lack epoll, so wayland isn't ready yet:
  	# https://gitlab.freedesktop.org/wayland/wayland/-/issues/72
  	# hurd also lacks *_CLOEXEC
@@ -68,19 +68,12 @@
    endif
  
    # Build intel drivers on archs where libdrm-intel is installed
-@@ -106,7 +97,7 @@ else
+@@ -108,7 +99,7 @@ else
    # LLVM is required for building r300g, radeonsi and llvmpipe drivers.
    # It's also required for building OpenCL support.
-   ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64))
+   ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64))
 -	GALLIUM_DRIVERS += radeonsi
 +	# GALLIUM_DRIVERS += radeonsi
  	confflags_GALLIUM += -Dllvm=enabled
  	confflags_GALLIUM += -Dgallium-opencl=icd
  
---- a/patches/series
-+++ b/patches/series
-@@ -1,4 +1,3 @@
- 07_gallium-fix-build-failure-on-powerpcspe.diff
--fix-python-shebang.diff
- path_max.diff
- src_glx_dri_common.h.diff
