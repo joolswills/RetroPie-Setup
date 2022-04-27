@@ -12,10 +12,10 @@
   libelf-dev [amd64 arm64 armel armhf i386 kfreebsd-amd64 kfreebsd-i386 mips64el mipsel powerpc ppc64 ppc64el riscv64 s390x sparc64],
   libwayland-dev (>= 1.15.0) [linux-any],
   libwayland-egl-backend-dev (>= 1.15.0) [linux-any],
-- llvm-13-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
-- libclang-13-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
-- libclang-cpp13-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
-- libclc-13-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
+- llvm-14-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
+- libclang-14-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
+- libclang-cpp14-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
+- libclc-14-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
 + llvm-9-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
 + libclang-9-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
 + libclc-dev [amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64],
@@ -28,7 +28,7 @@
  Homepage: https://mesa3d.org/
 --- a/rules
 +++ b/rules
-@@ -59,7 +59,7 @@ else
+@@ -61,7 +61,7 @@ else
    # radv/lavapipe needs LLVM and the Vulkan loader, so only build on the subset of
    # arches where we have LLVM enabled and where the Vulkan loader is built.
    ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64))
@@ -37,7 +37,7 @@
    endif
  
    ifeq ($(DEB_HOST_ARCH_OS), linux)
-@@ -67,11 +67,6 @@ else
+@@ -69,11 +69,6 @@ else
  	# Gallium drivers which require kernel support, not yet ported to non-Linux
  	GALLIUM_DRIVERS += nouveau virgl
  
@@ -49,7 +49,7 @@
  	# etnaviv, kmsro, tegra, vc4 and v3d kernel support are only available on armhf and arm64
  	ifneq (,$(filter $(DEB_HOST_ARCH), armhf arm64))
  		GALLIUM_DRIVERS += etnaviv kmsro lima panfrost tegra vc4 v3d
-@@ -88,16 +83,12 @@ else
+@@ -90,16 +85,12 @@ else
  	# Non-Linux ports lack epoll, so wayland isn't ready yet:
  	# https://gitlab.freedesktop.org/wayland/wayland/-/issues/72
  	# hurd also lacks *_CLOEXEC
@@ -68,7 +68,7 @@
    endif
  
    # Build intel drivers on archs where libdrm-intel is installed
-@@ -108,7 +99,7 @@ else
+@@ -110,7 +101,7 @@ else
    # LLVM is required for building r300g, radeonsi and llvmpipe drivers.
    # It's also required for building OpenCL support.
    ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips64el mipsel powerpc ppc64 ppc64el s390x sparc64))
