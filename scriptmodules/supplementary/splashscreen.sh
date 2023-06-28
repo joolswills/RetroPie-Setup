@@ -13,7 +13,7 @@ rp_module_id="splashscreen"
 rp_module_desc="Configure Splashscreen"
 rp_module_section="main"
 rp_module_repo="git https://github.com/RetroPie/retropie-splashscreens.git master"
-rp_module_flags="noinstclean !all rpi !osmc !xbian !aarch64"
+rp_module_flags="noinstclean !all rpi !osmc !xbian"
 
 function _update_hook_splashscreen() {
     # make sure splashscreen is always up to date if updating just RetroPie-Setup
@@ -32,9 +32,7 @@ function _video_exts_splashscreen() {
 }
 
 function depends_splashscreen() {
-    local params=(insserv)
-    isPlatform "32bit" && params+=(omxplayer)
-    getDepends "${params[@]}"
+    getDepends mpv
 }
 
 function install_bin_splashscreen() {
@@ -48,6 +46,7 @@ ConditionPathExists=$md_inst/asplashscreen.sh
 
 [Service]
 Type=oneshot
+User=$user
 ExecStart=$md_inst/asplashscreen.sh
 RemainAfterExit=yes
 
@@ -55,17 +54,22 @@ RemainAfterExit=yes
 WantedBy=sysinit.target
 _EOF_
 
-    rp_installModule "omxiv" "_autoupdate_"
-
     gitPullOrClone "$md_inst"
 
     cp "$md_data/asplashscreen.sh" "$md_inst"
+    # install script to kill splashscreen before running autostart scripts when using kms
+    if isPlatform "kms"; then
+        cp "$md_data/05-splash.sh" /etc/profile.d/
+    fi
 
     iniConfig "=" '"' "$md_inst/asplashscreen.sh"
     iniSet "ROOTDIR" "$rootdir"
     iniSet "DATADIR" "$datadir"
     iniSet "REGEX_IMAGE" "$(_image_exts_splashscreen)"
     iniSet "REGEX_VIDEO" "$(_video_exts_splashscreen)"
+    if isPlatform "videocore"; then
+        iniSet "CMD_OPTS" "--rpi-layer=10001"
+    fi
 
     if [[ ! -f "$configdir/all/$md_id.cfg" ]]; then
         iniConfig "=" '"' "$configdir/all/$md_id.cfg"
@@ -107,9 +111,6 @@ function disable_splashscreen() {
 function configure_splashscreen() {
     [[ "$md_mode" == "remove" ]] && return
 
-    # remove legacy service
-    [[ -f "/etc/init.d/asplashscreen" ]] && insserv -r asplashscreen && rm -f /etc/init.d/asplashscreen
-
     disable_plymouth_splashscreen
     enable_splashscreen
     [[ ! -f /etc/splashscreen.list ]] && default_splashscreen
@@ -118,8 +119,8 @@ function configure_splashscreen() {
 function remove_splashscreen() {
     enable_plymouth_splashscreen
     disable_splashscreen
-    rp_callModule "omxiv" remove
     rm -f /etc/splashscreen.list /etc/systemd/system/asplashscreen.service
+    rm -f "/etc/profile.d/05-splash.sh"
     systemctl daemon-reload
 }
 
@@ -229,7 +230,7 @@ function preview_splashscreen() {
 
     local path
     local file
-    local omxiv="/opt/retropie/supplementary/omxiv/omxiv"
+    local cmd="sudo -u $user mpv --very-quiet --image-display-duration 6"
     while true; do
         local cmd=(dialog --backtitle "$__backtitle" --menu "Choose an option." 22 86 16)
         local choice=$("${cmd[@]}" "${options[@]}" 2>&1 >/dev/tty)
@@ -241,13 +242,13 @@ function preview_splashscreen() {
                 1)
                     file=$(choose_splashscreen "$path" "image")
                     [[ -z "$file" ]] && break
-                    $omxiv -b "$file"
+                    $cmd "$file"
                     ;;
                 2)
                     file=$(mktemp)
                     find "$path" -type f ! -regex ".*/\..*" ! -regex ".*LICENSE" ! -regex ".*README.*" ! -regex ".*\.sh" | sort > "$file"
                     if [[ -s "$file" ]]; then
-                        $omxiv -t 6 -T blend -b --once -f "$file"
+                        $cmd "--playlist=$file"
                     else
                         printMsgs "dialog" "There are no splashscreens installed in $path"
                     fi
@@ -257,7 +258,7 @@ function preview_splashscreen() {
                 3)
                     file=$(choose_splashscreen "$path" "video")
                     [[ -z "$file" ]] && break
-                    omxplayer --no-osd -b --layer 10000 "$file"
+                    $vlc "$file"
                     ;;
             esac
         done
