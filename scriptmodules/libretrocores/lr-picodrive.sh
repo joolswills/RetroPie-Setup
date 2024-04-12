@@ -33,7 +33,8 @@ function build_lr-picodrive() {
         params+=(use_sh2drc=0)
     fi
     make clean
-    make -f Makefile.libretro "${params[@]}"
+    # disable distcc due to segfaults with cross compiler and lto
+    DISTCC_HOSTS="" make -f Makefile.libretro "${params[@]}"
     md_ret_require="$md_build/picodrive_libretro.so"
 }
 
