@@ -542,7 +542,9 @@ function cpu_armv7() {
 
 function cpu_armv8() {
     local cpu="$1"
-    __default_cpu_flags="-mcpu=$cpu"
+    if [[ -n "$cpu" ]]; then
+        __default_cpu_flags="-mcpu=$cpu"
+    fi
     if isPlatform "32bit"; then
         __default_cpu_flags+="  -mfpu=neon-fp-armv8"
         __platform_flags+=(arm armv8 neon)
@@ -590,6 +592,18 @@ function platform_rpi4() {
 
 function platform_rpi5() {
     cpu_armv8 "cortex-a76"
+    __platform_flags+=(rpi gles gles3 gles31)
+}
+
+function platform_rpi-armv8() {
+    __default_cpu_flags="-march=armv8-a"
+    cpu_armv8
+    __platform_flags+=(rpi gles gles3 gles31)
+}
+
+function platform_rpi-armv8-1() {
+    __default_cpu_flags="-march=armv8.1-a"
+    cpu_armv8
     __platform_flags+=(rpi gles gles3 gles31)
 }
 
