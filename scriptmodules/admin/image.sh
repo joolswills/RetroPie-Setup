@@ -201,7 +201,9 @@ function _init_chroot_image() {
     echo "nameserver $nameserver" >"$chroot/etc/resolv.conf"
 
     # move /etc/ld.so.preload out of the way to avoid warnings
-    mv "$chroot/etc/ld.so.preload" "$chroot/etc/ld.so.preload.bak"
+    if [[ -f "$chroot/etc/ld.so.preload" ]]; then
+        mv "$chroot/etc/ld.so.preload" "$chroot/etc/ld.so.preload.bak"
+    fi
 }
 
 function _deinit_chroot_image() {
@@ -214,8 +216,10 @@ function _deinit_chroot_image() {
 
     isPlatform "x86" && rm -f "$chroot/usr/bin/qemu-arm-static"
 
-    # restore /etc/ld.so.preload
-    mv "$chroot/etc/ld.so.preload.bak" "$chroot/etc/ld.so.preload"
+    # restore /etc/ld.so.preload if backup present
+    if [[ -f "$chroot/etc/ld.so.preload.bak" ]]; then
+        mv "$chroot/etc/ld.so.preload.bak" "$chroot/etc/ld.so.preload"
+    fi
 
     umount -l "$chroot/proc" "$chroot/dev/pts"
     trap INT
