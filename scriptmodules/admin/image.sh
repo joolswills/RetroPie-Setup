@@ -124,13 +124,19 @@ function install_rp_image() {
         sed -i "s/quiet/quiet loglevel=3 consoleblank=0 plymouth.enable=0 quiet/" "$chroot/boot/cmdline.txt"
     fi
 
-    # set default GPU mem (videocore only) and overscan_scale so ES scales to overscan settings.
-    iniConfig "=" "" "$chroot/boot/config.txt"
+    local boot_config="$chroot/boot/config.txt"
+
+    # rpi config.txt has moved to /boot/firmware on Raspberry Pi OS 12+
+    [[ "$dist_version" -ge 12 ]] && boot_config="$chroot/boot/firmware/config.txt"
+
+    iniConfig "=" "" "$boot_config"
+    # set default GPU mem (videocore only)
     if [[ "$dist_version" -lt 11 && "platform" != "rpi4" ]]; then
         iniSet "gpu_mem_256" 128
         iniSet "gpu_mem_512" 256
         iniSet "gpu_mem_1024" 256
     fi
+    # set overscan_scale so ES scales to overscan settings.
     iniSet "overscan_scale" 1
 
     # disable 64bit kernel
