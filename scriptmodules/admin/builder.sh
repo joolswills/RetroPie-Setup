@@ -96,10 +96,14 @@ function chroot_build_builder() {
 
     for dist in $dists; do
         [[ -z "$platforms" ]] && platforms="$(_get_info_image "$dist" "platforms")"
+        [[ -z "$platforms" ]] && fatalError "Unable to get platforms information for $dist"
 
         local chroot_dir="$md_build/$dist"
         local chroot_rps_dir="$chroot_dir/home/pi/RetroPie-Setup"
-        local archive_dir="tmp/archives/$(_get_info_image "$dist" "name")"
+
+        local dist_name="$(_get_info_image "$dist" "name")"
+        [[ -z "$dist_name" ]] && fatalError "Unable to get name information for $dist"
+        local archive_dir="tmp/archives/$dist_name"
 
         local distcc_hosts="$__builder_distcc_hosts"
 
