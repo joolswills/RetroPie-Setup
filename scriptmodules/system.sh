@@ -68,7 +68,12 @@ function conf_binary_vars() {
     __binary_host="files.retropie.org.uk"
     __binary_base_url="https://$__binary_host/binaries"
 
-    __binary_path="$__os_codename/$__platform"
+    __binary_path="$__os_codename"
+    # add -64 suffix for 64bit
+    isPlatform "64bit" && __binary_path+="-64"
+    # add platform folder (eg. rpi4)
+    __binary_path+="/$__platform"
+
     isPlatform "kms" && __binary_path+="/kms"
     __binary_url="$__binary_base_url/$__binary_path"
 
