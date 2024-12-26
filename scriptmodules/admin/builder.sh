@@ -20,6 +20,13 @@ function depends_builder() {
 function module_builder() {
     local ids=($@)
 
+    # set log directories
+    local log_dir_ok="$__tmpdir/build_logs/ok/$__binary_path"
+    local log_dir_fail="$__tmpdir/build_logs/fail/$__binary_path"
+
+    # create the log directories
+    mkdir -p "$log_dir_ok" "$log_dir_fail"
+
     local id
     for id in "${ids[@]}"; do
         printMsgs "console" "Checking module $id ..."
@@ -53,17 +60,35 @@ function module_builder() {
             printMsgs "console" "Update found."
         fi
 
+        # delete previous log if present
+        rm -f "$log_dir_ok/$id.log"
+
         # build, install and create binary archive.
         # initial clean in case anything was in the build folder when calling
+        local failed=0
         local mode
         for mode in clean depends sources build install create_bin clean remove "depends remove"; do
             # don't try and create binary archives for modules with an install_bin such as sdl1/sdl2
             if [[ "$mode" == "create_bin" ]] && fnExists "install_bin_${id}"; then
                 continue
             fi
-            # continue to next module if not available or an error occurs
-            rp_callModule "$id" $mode || break
+            # call the module function, logging the output.
+            rp_callModule "$id" $mode 2>&1 | tee -a "$log_dir_ok/$id.log"
+
+            # if the module function returns an error mark as failed and continue to next module
+            if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+                failed=1
+                break
+            fi
         done
+
+        if [[ "$failed" -eq 0 ]]; then
+            # if the build is successful, remove any previous fail log
+            rm -f "$log_dir_fail/$id.log"
+        else
+            # otherwise, the build failed or a module wasn't available so move the module output to a fail log
+            mv "$log_dir_ok/$id.log" "$log_dir_fail/$id.log"
+        fi
     done
     return 0
 }
@@ -113,7 +138,6 @@ function chroot_build_builder() {
         [[ -z "$makeflags" ]] && makeflags="-j$(nproc)"
         [[ ! -d "$chroot_dir" ]] && rp_callModule image create_chroot "$dist" "$chroot_dir"
 
-
         if [[ ! -d "$chroot_rps_dir" ]]; then
             gpg --export-secret-keys "$__gpg_signing_key" >"$chroot_dir/retropie.key"
             rp_callModule image chroot "$chroot_dir" bash -c "
@@ -160,5 +184,16 @@ function chroot_build_builder() {
         done
 
         rsync -av "$chroot_rps_dir/$archive_dir/" "$scriptdir/$archive_dir/"
+
+        # sync the builder logs
+        mkdir -p "$scriptdir/$log_dir"
+
+        # sync the build_logs from the chroot to the host system
+        local src_build_logs="$chroot_rps_dir/tmp/build_logs"
+        local dest_build_logs="$scriptdir/tmp/build_logs"
+        mkdir -p "$dest_build_logs/"{ok,fail}
+        # sync ok/fail separately, so we can delete removed file without disturbing other $dist_name logs in the dest
+        rsync -av --delete "$src_build_logs/ok/$dist_name" "$dest_build_logs/ok/"
+        rsync -av --delete "$src_build_logs/fail/$dist_name" "$dest_build_logs/fail/"
     done
 }
