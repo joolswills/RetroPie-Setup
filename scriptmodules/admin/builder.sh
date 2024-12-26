@@ -20,6 +20,10 @@ function depends_builder() {
 function module_builder() {
     local ids=($@)
 
+    local log_dir="$md_build/logs/$__binary_path"
+
+    mkdir -p "$log_dir"
+
     local id
     for id in "${ids[@]}"; do
         printMsgs "console" "Checking module $id ..."
@@ -56,14 +60,30 @@ function module_builder() {
         # build, install and create binary archive.
         # initial clean in case anything was in the build folder when calling
         local mode
+        local failed=0
         for mode in clean depends sources build install create_bin clean remove "depends remove"; do
             # don't try and create binary archives for modules with an install_bin such as sdl1/sdl2
             if [[ "$mode" == "create_bin" ]] && fnExists "install_bin_${id}"; then
                 continue
             fi
-            # continue to next module if not available or an error occurs
-            rp_callModule "$id" $mode || break
+            # call the module function, logging the output.
+            rp_callModule "$id" $mode 2>&1 | tee -a "$log_dir/$id.log"
+            
+            # if the module function returns an error mark as failed and continue to next module
+            if [[ "${PIPESTATUS[0]}" -ne 0 ]]; then
+                failed=1
+                break
+            fi
         done
+
+        if [[ "$failed" -eq 1 ]]; then
+            # if the build failed or a module isn't available then move the module output to a "fail" log
+            mv "$log_dir/$id.log" "$log_dir/FAIL_$id.log"
+        else
+            # otherwise on success move to an "ok" log and remove any previous "fail" log
+            mv "$log_dir/$id.log" "$log_dir/OK_$id.log"
+            rm -f "$log_dir/FAIL_$id.log"
+        fi
     done
     return 0
 }
@@ -103,6 +123,7 @@ function chroot_build_builder() {
 
         local dist_name="$(_get_info_image "$dist" "name")"
         [[ -z "$dist_name" ]] && fatalError "Unable to get name information for $dist"
+
         local archive_dir="tmp/archives/$dist_name"
 
         local distcc_hosts="$__builder_distcc_hosts"
@@ -160,5 +181,11 @@ function chroot_build_builder() {
         done
 
         rsync -av "$chroot_rps_dir/$archive_dir/" "$scriptdir/$archive_dir/"
+
+        # sync the builder logs
+        mkdir -p "$scriptdir/$log_dir"
+
+        # need to hardcode the tmp/build logs location currently
+        rsync -av --delete "$chroot_rps_dir/tmp/build/$md_id/logs/$dist_name" "$scriptdir/tmp/build_logs/"
     done
 }
