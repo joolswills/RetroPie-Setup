@@ -20,6 +20,9 @@ function depends_builder() {
 function module_builder() {
     local ids=($@)
 
+    local log_dir="$md_build/logs/$__binary_path"
+    mkdir -p "$log_dir"
+
     local id
     for id in "${ids[@]}"; do
         printMsgs "console" "Checking module $id ..."
@@ -56,14 +59,25 @@ function module_builder() {
         # build, install and create binary archive.
         # initial clean in case anything was in the build folder when calling
         local mode
+        local failed=0
         for mode in clean depends sources build install create_bin clean remove "depends remove"; do
             # don't try and create binary archives for modules with an install_bin such as sdl1/sdl2
             if [[ "$mode" == "create_bin" ]] && fnExists "install_bin_${id}"; then
                 continue
             fi
-            # continue to next module if not available or an error occurs
-            rp_callModule "$id" $mode || break
+            # set as failed and continue to next module if not available or an error occurs
+            if ! rp_callModule "$id" $mode ; then
+                failed=1
+                break
+            fi
         done
+        local fail_log="$log_dir/failed_$id.log"
+        # if the build failed or a module isn't available then log the error else clean failed log file
+        if [[ "$failed" -eq 1 ]]; then
+            echo "$__ERRMSGS" >"$fail_log"
+        else
+            rm -f "$fail_log"
+        fi
     done
     return 0
 }
