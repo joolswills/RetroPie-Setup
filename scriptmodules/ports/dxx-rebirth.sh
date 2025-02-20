@@ -41,6 +41,8 @@ function depends_dxx-rebirth() {
 
 function sources_dxx-rebirth() {
     gitPullOrClone
+    # Fix cast error building for 32bit arm on aarch64 kernel with gcc 12.2.0
+    isPlatform "arm" && [[ "$__gcc_version" -eq 12 ]] && applyPatch "$md_data/armv8_gcc12_cast_fix.diff"
 }
 
 function _get_build_path_dxx-rebirth() {

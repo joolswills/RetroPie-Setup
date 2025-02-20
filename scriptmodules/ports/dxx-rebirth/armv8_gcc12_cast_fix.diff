@@ -1,0 +1,20 @@
+ Fix cast error building for 32bit arm on aarch64 kernel with gcc 12.2.0:
+ 
+ similar/main/songs.cpp: In function ‘void d1x::songs_play_level_song(int, int)’:
+ similar/main/songs.cpp:796:53: error: useless cast to type ‘unsigned int’ [-Werror=useless-cast]
+   796 |                     const song_number secretsongnum{static_cast<unsigned>((-levelnum - 1) % size)};
+       |                                                     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+
+diff --git a/similar/main/songs.cpp b/similar/main/songs.cpp
+index 9d4b6ca60..94c4f3359 100644
+--- a/similar/main/songs.cpp
++++ b/similar/main/songs.cpp
+@@ -793,7 +793,7 @@ void songs_play_level_song(int levelnum, int offset)
+ 				 */
+ 				if (const auto size{BIMSecretSongs.size()})
+ 				{
+-					const song_number secretsongnum{static_cast<unsigned>((-levelnum - 1) % size)};
++					const song_number secretsongnum{((-levelnum - 1) % size)};
+ 					if (songs_play_file(BIMSecretSongs[secretsongnum].filename.data(), 1, nullptr))
+ 						Song_playing = secretsongnum;
+ 				}
