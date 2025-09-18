@@ -196,7 +196,9 @@ sudo apt-get -y install git dialog xmlstarlet joystick
 git clone -b "$__chroot_branch" "$__chroot_repo"
 cd RetroPie-Setup
 modules=(
-    'raspbiantools apt_upgrade'
+    # add apt-get parameters to force the use of new configuration files.
+    # raspberrypi os packaging, sometimes thinks config files have been changed outside the packaging and prompts.
+    'raspbiantools apt_upgrade -o Dpkg::Options::=--force-confnew'
     'setup basic_install'
     'bluetooth depends'
     'raspbiantools enable_modules'
