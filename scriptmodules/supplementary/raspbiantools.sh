@@ -15,6 +15,9 @@ rp_module_section="config"
 rp_module_flags="!all rpi"
 
 function apt_upgrade_raspbiantools() {
+    # pass any additional parameters onto apt-get
+    local params=("$@")
+
     # install an older kernel/firmware for stretch to resolve newer kernel issues or unhold if updating to a newer release
     stretch_fix_raspbiantools
 
@@ -35,7 +38,7 @@ function apt_upgrade_raspbiantools() {
     fi
 
     aptUpdate
-    apt-get -y dist-upgrade --allow-downgrades
+    apt-get -y dist-upgrade --allow-downgrades "${params[@]}"
 }
 
 function lxde_raspbiantools() {
