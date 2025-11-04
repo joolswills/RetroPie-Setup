@@ -171,7 +171,7 @@ function chroot_build_builder() {
         fi
 
         # if we have a __builder_repo and __builder_branch set, check out the branch and use that
-        if [[ -n "$__builder_repo" && "$__builder_branch" ]]; then
+        if [[ -n "$__builder_repo" && -n "$__builder_branch" ]]; then
             rp_callModule image chroot "$chroot_dir" bash -c "
                 cd ~/RetroPie-Setup
                 git remote add builder $__builder_repo
