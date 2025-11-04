@@ -206,9 +206,9 @@ function get_os_version() {
 
             # if __has_binaries is not set, and we are on the Raspberry Pi, check if we support binaries
             if [[ -z "$__has_binaries" ]] && isPlatform "rpi"; then
-                # we currently support 32bit binaries on Raspberry Pi OS 10 & 11 and both 32/64bit binaries on Raspberry Pi OS 12
+                # we currently support 32bit binaries on Raspberry Pi OS 10 & 11 and both 32/64bit binaries on Raspberry Pi OS 12/13
                 if ([[ "$__os_debian_ver" -ge 10 && "$__os_debian_ver" -le 11 ]] && isPlatform "32bit") \
-                    || [[ "$__os_debian_ver" -eq 12 ]]; then
+                    || [[ "$__os_debian_ver" -ge 12 && "$__os_debian_ver" -lt 14 ]]; then
                     __has_binaries=1
                 fi
             fi
